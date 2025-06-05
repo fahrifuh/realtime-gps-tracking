@@ -1,4 +1,4 @@
-const WS_URL = "wss://776c-140-0-77-38.ngrok-free.app";
+const WS_URL = `wss://${window.location.host}`;
 let map, marker, polyline;
 let coords = [];
 let totalDistance = 0;
