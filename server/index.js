@@ -1,25 +1,39 @@
-const WebSocket = require("ws");
+const express = require("express");
+const path = require("path");
 const http = require("http");
-const server = http.createServer();
+const WebSocket = require("ws");
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+// Serve file statis dari folder public
+app.use(express.static(path.join(__dirname, "../public")));
+
+// Buat server HTTP (bukan langsung app.listen)
+const server = http.createServer(app);
+
+// Buat WebSocket server di atas server HTTP yang sama
 const wss = new WebSocket.Server({ server });
 
-wss.on("connection", (socket) => {
-  console.log("Client Connected");
+// Broadcast data posisi ke semua client yang connect
+wss.on("connection", (ws) => {
+  console.log("Client connected");
 
-  socket.on("message", (msg) => {
+  ws.on("message", (message) => {
+    // Broadcast ke semua client, termasuk pengirim
     wss.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
-        client.send(msg);
+        client.send(message);
       }
     });
   });
 
-  socket.on("close", () => {
-    console.log("Client Disconnected");
+  ws.on("close", () => {
+    console.log("Client disconnected");
   });
 });
 
-const PORT = process.env.PORT || 3001;
+// Jalankan server HTTP + WebSocket
 server.listen(PORT, () => {
-    console.log(`Websocket server running on port ${PORT}`)
-})
+  console.log(`Server listening on http://localhost:${PORT}`);
+});
